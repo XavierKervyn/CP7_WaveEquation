@@ -355,7 +355,7 @@ int main(int argc, char* argv[])
   double dy = abs(u2->get_upper_extremum()-u2->get_lower_extremum())/double(Ny_real-1);
   double dt = configFile.get<double>("dt");
   if(ComputeDt) { //si l'option est valide, on détermine dt à partir de la formule de l'énoncé
-    dt  = (CFL*dx*dy)/sqrt((pow(dx,2)+pow(dy,2))*u2->max());
+    dt  = (CFL*dx*dy)/sqrt((pow(dx,2)+pow(dy,2))*u2->max()); cout << dt << endl;
   }
 
   bool write_mesh = configFile.get<bool>("write_mesh"); // Exporter x,y
@@ -418,8 +418,8 @@ int main(int argc, char* argv[])
   double u2_loc(0);
 
   // TODO: calcul de l'inverse de la longueur d'onde en x et y: k_x=m*pi/L_x; k_y=n*pi/L_y;
-  double k_wave_x(mode_num_x*pi/abs(u2->get_right_extremum()-u2->get_left_extremum()) );
-  double k_wave_y(mode_num_y*pi/abs(u2->get_upper_extremum()-u2->get_lower_extremum()));
+  double k_wave_x(pi*mode_num_x/abs(u2->get_right_extremum()-u2->get_left_extremum()) );
+  double k_wave_y(pi*mode_num_y/abs(u2->get_upper_extremum()-u2->get_lower_extremum()));
 
   // Initialisation des tableaux du schema numerique :
   vector<vector<double>> fpast(Ny,vector<double>(Nx)), fnow(Ny,vector<double>(Nx)),\
@@ -429,6 +429,14 @@ int main(int argc, char* argv[])
     // On initialise alors un mode propre (m,n);
     // TODO: completer fnow, fpast, beta_x^2, beta_y^2
     // Note : La syntaxe pour evaluer u^2 au point x est (*u2)(x,y)
+    for(unsigned int i(0); i < Nx; ++i) {
+        for(unsigned int j(0); j < Ny; ++j) {
+          fpast[i][j]   = F0*sin(k_wave_x*(u2->get_left_extremum()+i*dx))*sin(k_wave_y*(u2->get_lower_extremum()+j*dy));
+          fnow[i][j]    = fpast[i][j];
+          betax2[i][j]  = (*u2)(u2->get_left_extremum()+i*dx,u2->get_lower_extremum()+j*dy) * pow(dt,2)/pow(dx,2);
+          betay2[i][j]  = (*u2)(u2->get_left_extremum()+i*dx,u2->get_lower_extremum()+j*dy) * pow(dt,2)/pow(dy,2);
+        }
+    }
 
   } else {
     // On initialise alors une perturbation nulle.
