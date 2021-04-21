@@ -305,7 +305,7 @@ double const& xL, double const& xR,double const& yL, double const& yU, \
 double const& pert_velocity, double const& pert_amplitude, \
 int const mode_num_x,int const mode_num_y) {
 
-  return 0.0; //pert_amplitude*sin(pert_velocity*t); //a revoir !! pourquoi autant d'arguments ?
+  return pert_amplitude*sin(mode_num_x*pi*x/(xR-xL))*sin(mode_num_y*pi*y/(yU-yL))*sin(pert_velocity*t);
 }
 
 //
