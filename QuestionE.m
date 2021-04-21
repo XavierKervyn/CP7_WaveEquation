@@ -1,10 +1,11 @@
 %% Matlab: question e 
 clear; close all; clc;
-nsimul=1;
+
 % Parametres physiques:
 xL   = 0.0 ; 		     xR   = 10.0 ; 		     
 yL   = 0.0 ;		     yU   = 6.0 ;		%dimensions (m)     
-pert_amplitude = 3.e1;	 pert_velocity  = linspace(1,11.1,nsimul);	
+pert_amplitude = 3.e1;	 
+nsimul=20; pert_velocity = linspace(8,14,nsimul);	
 
 % Parametres physiques milieu uniforme:
 u = 4.e0; % vitesse de propagation (m/s)
@@ -40,18 +41,21 @@ type_init = 'homogene';     % type initialisation: harmonic, default: homogene
 F0 = 1.e0;			        % amplitude de l'harmonique initiale
 A = 1.e0;			        % amplitude condition bord harmonique
 omega = 10.e0;			    % frequence condition bord harmonique
-write_mesh = true;		    % si vrai le maillage est ecrite dans output_mesh.out
-write_f = true;		 	    % si vrai la solution est ecrite dans output_f.out
+write_mesh = false;		    % si vrai le maillage est ecrite dans output_mesh.out
+write_f = false;		 	% si vrai la solution est ecrite dans output_f.out
 n_stride = 0;			    % nombre de stride
 
 %période d'oscillation th.
 T = 2/(u*sqrt((mode_num_x/(xR-xL))^2 + (mode_num_y/(yU-yL))^2));
 nbperiodes = 20; tfin = nbperiodes*T;
 omegaMN = 2*pi/T;
-Nsteps = 2000; dt = tfin/Nsteps;
+Nsteps = 1000; dt = tfin/Nsteps;
 
 % Simulations
-filename2  = "PVelocity_"+ string(pert_velocity);
+filename2  = "PVelocity_"+ num2str(pert_velocity(1));
+for i = 2:nsimul
+    filename2(i)  = "PVelocity_"+ num2str(pert_velocity(i));
+end
 
 for i=1:nsimul
     PV_loc = pert_velocity(i);
@@ -61,19 +65,30 @@ for i=1:nsimul
 end
 
 %
-ViewFormat; facteurTemps = 8;
+% ViewFormat; facteurTemps = 8;
+% for k=1:nsimul
+%     data = load(filename2(k)+'_f.out');
+%     mesh = load(filename2(k)+'_mesh.out');
+%     figure('Name',"plotsimulation PVelocity="+num2str(pert_velocity(k)))
+%     for i =1:length(data(:,1))/Ny
+%         surf(mesh(1,:),mesh(2,:),data(Ny*(i-1)+1:Ny*i,2:Nx+1));
+%         title("$t =$"+num2str(data(Ny*i,1))+"s, $PV =$"+num2str(CFL(k))+"m/s",'Interpreter','latex');
+%         grid minor; set(gca,'fontsize',fs);
+%         xlabel('$x$ [m]'); ylabel('$y$ [m]'); zlabel('$f$ [a.u.]')
+%         zlim([-0.5 0.5]);
+%     %     view(0,0);
+%         pause((1/facteurTemps)*dt);
+%     %     pause();
+%     end
+% end
+
+ViewFormat;
+figure('Name','plot omega')
+Emax = zeros(1,nsimul);
 for k=1:nsimul
-    data = load(filename2(k)+'_f.out');
-    mesh = load(filename2(k)+'_mesh.out');
-    figure('Name',"plotsimulation PVelocity="+num2str(pert_velocity(k)))
-    for i =1:length(data(:,1))/Ny
-        surf(mesh(1,:),mesh(2,:),data(Ny*(i-1)+1:Ny*i,2:Nx+1));
-        title("$t =$"+num2str(data(Ny*i,1))+"s, $PV =$"+num2str(CFL(k))+"m/s",'Interpreter','latex');
-        grid minor; set(gca,'fontsize',fs);
-        xlabel('$x$ [m]'); ylabel('$y$ [m]'); zlabel('$f$ [a.u.]')
-        zlim([-0.5 0.5]);
-    %     view(0,0);
-        pause((1/facteurTemps)*dt);
-    %     pause();
-    end
+    dataE   = load(filename2(k)+'_E.out'); E = dataE(:,2);
+    Emax(k) = max(E);
 end
+    plot(pert_velocity, Emax, '+-','Linewidth', lw);
+    grid minor; set(gca,'fontsize',fs);
+    xlabel('$\omega_{m,n}$ [rad/s]'); ylabel('$\hat{E}(\omega_{m,n})$ [J]');
