@@ -476,7 +476,7 @@ int main(int argc, char* argv[])
     fichier_mesh.close();
   }
 
-  for(t=0.; t<=tfin-dt; t+=dt)
+  for(t=0.; t<=tfin-dt*9./10; t+=dt)
   {
     // Ecriture :
     if(stride >= n_stride )
@@ -523,7 +523,7 @@ int main(int argc, char* argv[])
         break;
       case neumann:   for(unsigned int j(start_yiD); j<=end_yiD; ++j) fnext[j][Nx-1] = fnext[j][Nx-3];// ("libre")
         break;
-      case harmonic: // TODO : Completer la condition au bord droit harmonique
+      case harmonic:  for(unsigned int j(start_yiD); j<=end_yiD; ++j) fnext[j][end_xiD] = A*sin(omega*(t+dt)); // TODO : Completer la condition au bord droit harmonique
         break;
       default:
         throw "Invalid right boundary condition!";
@@ -535,7 +535,7 @@ int main(int argc, char* argv[])
         break;
       case neumann:   for(unsigned int i(start_xiD); i<=end_xiD; ++i) fnext[start_yiD-1][i] = fnext[start_yiD+1][i]; // ("libre")
         break;
-      case harmonic: // TODO : Completer la condition au bord inferieur harmonique
+      case harmonic:  for(unsigned int i(start_yiD); i<=end_xiD; ++i) fnext[start_yiD][i] = A*sin(omega*(t+dt)); // TODO : Completer la condition au bord inferieur harmonique
         break;
       default:
         throw "Invalid lower boundary condition!";
@@ -546,7 +546,7 @@ int main(int argc, char* argv[])
         break;
       case neumann:   for(unsigned int i(start_xiD); i<=end_xiD; ++i) fnext[end_yiD][i] = fnext[end_yiD-2][i]; // ("libre")
         break;
-      case harmonic: // TODO : Completer la condition au bord superieur harmonique
+      case harmonic:  for(unsigned int i(start_yiD); i<=end_xiD; ++i) fnext[end_yiD][i] = A*sin(omega*(t+dt)); // TODO : Completer la condition au bord superieur harmonique
         break;
       default:
         throw "Invalid upper boundary condition!";

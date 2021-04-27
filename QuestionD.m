@@ -164,9 +164,3 @@ for k=1:nsimul
     %     pause();
     end
 end
-
-%%
-figure('Name','plotCFL')
-    plot(CFL,tblowup,'+-','Linewidth',lw);
-    grid minor; set(gca,'fontsize',fs);
-    xlabel('$\beta_{CFL}$'); ylabel('$t_{blow}$ [s]');
