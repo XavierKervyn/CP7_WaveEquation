@@ -189,7 +189,7 @@ public:
     den = d2h[0]*d2h[2]-d2h[1]*d2h[1];
     jac_inv[0][0] = d2h[2]/den;
     jac_inv[0][1] = -d2h[1]/den;
-    jac_inv[1][0] = -d2h[1]/den;
+    jac_inv[1][0] = d2h[1];
     jac_inv[1][1] = d2h[0]/den;
     return jac_inv;
   }
@@ -429,12 +429,12 @@ int main(int argc, char* argv[])
     // On initialise alors un mode propre (m,n);
     // TODO: completer fnow, fpast, beta_x^2, beta_y^2
     // Note : La syntaxe pour evaluer u^2 au point x est (*u2)(x,y)
-    for(unsigned int i(start_yiD); i < end_yiD+1; ++i) {
-        for(unsigned int j(start_xiD); j < end_xiD+1; ++j) {
-          fpast[i][j]   = F0*sin(k_wave_x*(u2->get_left_extremum()+j*dx))*sin(k_wave_y*(u2->get_lower_extremum()+i*dy));
+    for(unsigned int i(0); i < Nx; ++i) {
+        for(unsigned int j(0); j < Ny; ++j) {
+          fpast[i][j]   = F0*sin(k_wave_x*(u2->get_left_extremum()+i*dx))*sin(k_wave_y*(u2->get_lower_extremum()+j*dy));
           fnow[i][j]    = fpast[i][j];
-          betax2[i][j]  = (*u2)(u2->get_left_extremum()+j*dx,u2->get_lower_extremum()+i*dy) * pow(dt,2)/pow(dx,2);
-          betay2[i][j]  = (*u2)(u2->get_left_extremum()+j*dx,u2->get_lower_extremum()+i*dy) * pow(dt,2)/pow(dy,2);
+          betax2[i][j]  = (*u2)(u2->get_left_extremum()+i*dx,u2->get_lower_extremum()+j*dy) * pow(dt,2)/pow(dx,2);
+          betay2[i][j]  = (*u2)(u2->get_left_extremum()+i*dx,u2->get_lower_extremum()+j*dy) * pow(dt,2)/pow(dy,2);
         }
     }
 
@@ -442,12 +442,12 @@ int main(int argc, char* argv[])
     // On initialise alors une perturbation nulle.
     // TODO: completer fnow, fpast, beta_x^2, beta_y^2
     // Note : La syntaxe pour evaluer u^2 au point x est (*u2)(x,y)
-    for(unsigned int i(start_yiD); i < end_yiD+1; ++i) {
-        for(unsigned int j(start_xiD); j < end_yiD+1; ++j) {
+    for(unsigned int i(0); i < Nx; ++i) {
+        for(unsigned int j(0); j < Ny; ++j) {
           fpast[i][j]   = 0.;
           fnow[i][j]    = 0.;
-          betax2[i][j]  = (*u2)(u2->get_left_extremum()+j*dx,u2->get_lower_extremum()+i*dy) * pow(dt,2)/pow(dx,2);
-          betay2[i][j]  = (*u2)(u2->get_left_extremum()+j*dx,u2->get_lower_extremum()+i*dy) * pow(dt,2)/pow(dy,2);
+          betax2[i][j]  = (*u2)(u2->get_left_extremum()+i*dx,u2->get_lower_extremum()+j*dy) * pow(dt,2)/pow(dx,2);
+          betay2[i][j]  = (*u2)(u2->get_left_extremum()+i*dx,u2->get_lower_extremum()+j*dy) * pow(dt,2)/pow(dy,2);
         }
     }
   }
@@ -507,15 +507,11 @@ int main(int argc, char* argv[])
     // Conditions aux bords:
     switch(bc_left)
     { // condition au bord "gauche" (x=0)
-      case dirichlet: for(unsigned int j(0); j<Ny; ++j) fnext[j][0] = 0;    // ("fixe")
+      case dirichlet: for(unsigned int j(start_yiD); j<=end_yiD; ++j) fnext[j][0] = 0;    // ("fixe")
         break;
-      case neumann:   for(unsigned int j(0); j<Ny; ++j) fnext[j][0] = fnext[j][2]; // ("libre")
+      case neumann:   for(unsigned int j(start_yiD); j<=end_yiD; ++j) fnext[j][0] = fnext[j][2]; // ("libre")
         break;
-      case harmonic:  for(unsigned int j(0); j<Ny; ++j) fnext[j][0] = A*sin(omega*(t+dt));
-      if(impulsion){
-        if(t > 2*pi/omega)
-          bc_left = neumann;
-      }
+      case harmonic:  for(unsigned int j(start_yiD); j<=end_yiD; ++j) fnext[j][start_xiD] = A*sin(omega*(t+dt));   // t+dt OK ??
         break;
       default:
         throw "Invalid left boundary condition!";
@@ -523,15 +519,11 @@ int main(int argc, char* argv[])
 
     switch(bc_right) // condition au bord droite (x=L_x)
     {
-      case dirichlet: for(unsigned int j(0); j<Ny; ++j) fnext[j][Nx-1] = 0; // ("fixe")
+      case dirichlet: for(unsigned int j(start_yiD); j<=end_yiD; ++j) fnext[j][end_xiD] = 0; // ("fixe")
         break;
-      case neumann:   for(unsigned int j(0); j<Ny; ++j) fnext[j][Nx-1] = fnext[j][Nx-3];// ("libre")
+      case neumann:   for(unsigned int j(start_yiD); j<=end_yiD; ++j) fnext[j][Nx-1] = fnext[j][Nx-3];// ("libre")
         break;
-      case harmonic:  for(unsigned int j(0); j<Ny; ++j) fnext[j][Nx-1] = A*sin(omega*(t+dt)); // TODO : Completer la condition au bord droit harmonique
-      if(impulsion){
-        if(t > 2*pi/omega)
-          bc_right = neumann;
-      }
+      case harmonic:  for(unsigned int j(start_yiD); j<=end_yiD; ++j) fnext[j][end_xiD] = A*sin(omega*(t+dt)); // TODO : Completer la condition au bord droit harmonique
         break;
       default:
         throw "Invalid right boundary condition!";
@@ -539,30 +531,22 @@ int main(int argc, char* argv[])
 
     switch(bc_lower) // condition au bord inferieur (y=0)
     {
-      case dirichlet: for(unsigned int i(0); i<Nx; ++i) fnext[0][i] = 0; // ("fixe")
+      case dirichlet: for(unsigned int i(start_xiD); i<=end_xiD; ++i) fnext[start_yiD][i] = 0; // ("fixe")
         break;
-      case neumann:   for(unsigned int i(0); i<Nx; ++i) fnext[0][i] = fnext[2][i]; // ("libre")
+      case neumann:   for(unsigned int i(start_xiD); i<=end_xiD; ++i) fnext[start_yiD-1][i] = fnext[start_yiD+1][i]; // ("libre")
         break;
-      case harmonic:  for(unsigned int i(0); i<Nx; ++i) fnext[0][i] = A*sin(omega*(t+dt)); // TODO : Completer la condition au bord inferieur harmonique
-      if(impulsion){
-        if(t > 2*pi/omega)
-          bc_lower = neumann;
-      }
+      case harmonic:  for(unsigned int i(start_yiD); i<=end_xiD; ++i) fnext[start_yiD][i] = A*sin(omega*(t+dt)); // TODO : Completer la condition au bord inferieur harmonique
         break;
       default:
         throw "Invalid lower boundary condition!";
     }
     switch(bc_upper) // condition au bord superieur (y=L_y)
     {
-      case dirichlet: for(unsigned int i(0); i<Nx; ++i) fnext[Ny-1][i] = 0;// ("fixe")
+      case dirichlet: for(unsigned int i(start_xiD); i<=end_xiD; ++i) fnext[end_yiD][i] = 0;// ("fixe")
         break;
-      case neumann:   for(unsigned int i(0); i<Nx; ++i) fnext[Ny-1][i] = fnext[Ny-3][i]; // ("libre")
+      case neumann:   for(unsigned int i(start_xiD); i<=end_xiD; ++i) fnext[end_yiD][i] = fnext[end_yiD-2][i]; // ("libre")
         break;
-      case harmonic:  for(unsigned int i(0); i<Nx; ++i) fnext[Ny-1][i] = A*sin(omega*(t+dt)); // TODO : Completer la condition au bord superieur harmonique
-      if(impulsion){
-        if(t > 2*pi/omega)
-          bc_upper = neumann;
-      }
+      case harmonic:  for(unsigned int i(start_yiD); i<=end_xiD; ++i) fnext[end_yiD][i] = A*sin(omega*(t+dt)); // TODO : Completer la condition au bord superieur harmonique
         break;
       default:
         throw "Invalid upper boundary condition!";

@@ -1,12 +1,12 @@
 %% Matlab - question c.
 clear all; close all; clc;
-Nsteps = 1000;
+Nsteps = 500;
 
 % Parametres physiques:
-tfin = 20.0;    % temps physique de la simulation (s)
+tfin = 10;
 xL   = 0.0 ; 		     xR   = 10.0 ; 		     
 yL   = 0.0 ;		     yU   = 6.0 ;		%dimensions (m)     
-pert_amplitude = 3.e0;	 pert_velocity  = 0.e0;	
+pert_amplitude = 0.e0;	 pert_velocity  = 0.e0;	
 
 % Parametres physiques milieu uniforme:
 u = 4.e0; % vitesse de propagation (m/s)
@@ -49,11 +49,9 @@ n_stride = 0;			    % nombre de stride
 %période d'oscillation th.
 T = 2/(u*sqrt((mode_num_x/(xR-xL))^2 + (mode_num_y/(yU-yL))^2));
 nbperiodes = 5;
-if(ComputeDt)
-    tfin = nbperiodes*T;
-    dt = tfin/Nsteps;
-end
-omegaMN = 2*pi/T;
+omegaMN = pi*u*sqrt( (mode_num_x/(xR-xL))^2 + (mode_num_y/(yU-yL))^2 );%2*pi/T;
+
+tfin = 0.5*T;
 
 % Simulations
 filename2  = ['CA_Nx_',num2str(Nx),'Ny_',num2str(Ny)];
@@ -63,7 +61,7 @@ disp('Exercice7_Kervyn_LeMeur configuration.in');
 system('Exercice7_Kervyn_LeMeur configuration.in'); 
 
 % Plot simulation
-ViewFormat; facteurTemps = 8;
+ViewFormat;
 data = load([filename2,'_f.out']);
 mesh = load([filename2,'_mesh.out']);
 
@@ -73,39 +71,37 @@ for i =1:length(data(:,1))/Ny
     title("$t =$"+num2str(data(Ny*i,1))+"s",'Interpreter','latex');
     grid minor; set(gca,'fontsize',fs);
     xlabel('$x$ [m]'); ylabel('$y$ [m]'); zlabel('$f$ [a.u.]')
-    zlim([-5 5]);
+    zlim([-2 2]);
 %     view(0,0);
-    pause((1/facteurTemps)*dt);
+    pause(1.e-5);
 %     pause();
 end
 
 figure('Name','plotAnalytique')
-[X, Y]  = meshgrid(mesh(1,:),mesh(2,:));
 for i =1:length(data(:,1))/Ny
-    surf(X,Y,F0*sin(pi*mode_num_x/(xR-xL)*X).*sin(pi*mode_num_y/(yU-yL)*Y)*cos(omegaMN*data(Ny*i,1)));
+    surf(mesh(1,:),mesh(2,:),F0*sin(pi*mode_num_x/(xR-xL)*mesh(1,:)).*sin(pi*mode_num_y/(yU-yL)*mesh(2,:)')*cos(omegaMN*data(Ny*i,1)));
     title("$t =$"+num2str(data(Ny*i,1))+"s",'Interpreter','latex');
     grid minor; set(gca,'fontsize',fs);
     xlabel('$x$ [m]'); ylabel('$y$ [m]'); zlabel('$f$ [a.u.]')
-    zlim([-5 5]);
-%     view(0,90);
-    pause((1/facteurTemps)*dt);
+    zlim([-2 2]);
+%     view(0,0);
+    pause(1.e-5);
+%     pause();
 end
 
-% soustraction des solutions
-ViewFormat; facteurTemps = 8;
+%% soustraction des solutions
+ViewFormat;
 data = load([filename2,'_f.out']);
 mesh = load([filename2,'_mesh.out']);
 figure('Name','Soustraction')
-[X, Y]  = meshgrid(mesh(1,:),mesh(2,:));
 for i =1:length(data(:,1))/Ny
-    surf(mesh(1,:),mesh(2,:),data(Ny*(i-1)+1:Ny*i,2:Nx+1)-F0*sin(pi*mode_num_x/(xR-xL)*X).*sin(pi*mode_num_y/(yU-yL)*Y)*cos(omegaMN*data(Ny*i,1)));
+    surf(mesh(1,:),mesh(2,:),data(Ny*(i-1)+1:Ny*i,2:Nx+1)-F0*sin(pi*mode_num_x/(xR-xL)*mesh(1,:)).*sin(pi*mode_num_y/(yU-yL)*mesh(2,:)')*cos(omegaMN*data(Ny*i,1)));
     title("t ="+num2str(data(Ny*i,1))+"s",'Interpreter','latex');
     grid minor; set(gca,'fontsize',fs);
     xlabel('$x$ [m]'); ylabel('$y$ [m]'); zlabel('$f$ [a.u.]')
-%     zlim([-0.1 0.1]);
+    zlim([-0.1 0.1]);
 %     view(0,0);
-    pause((1/facteurTemps)*dt);
-%     pause();
+    pause(1.e-5);
 end
 
 %% Matlab - question c: étude de convergence
@@ -157,7 +153,7 @@ n_stride = 0;			    % nombre de stride
 T = 2/(u*sqrt((mode_num_x/(xR-xL))^2 + (mode_num_y/(yU-yL))^2));
 if(~ComputeDt)
     tfin = T;
-    nsimul = 30; Nsteps = round(logspace(2,3,nsimul));
+    nsimul = 30; Nsteps = round(logspace(1.15,3,nsimul));
     dt = tfin./Nsteps;
 end
 omegaMN = 2*pi/T;
@@ -178,9 +174,8 @@ NperErr = zeros(1,nsimul);
 for k=1:nsimul
     data   = load(filename2(k)+'_f.out');
     mesh   = load(filename2(k)+'_mesh.out');
-    [X, Y] = meshgrid(mesh(1,:),mesh(2,:));
     %on récupère fnum(t=T), un tableau de taille (Nx)*Ny
-    ErrF  = data(end-(Ny-1):end,2:end)-F0*sin(pi*mode_num_x/(xR-xL)*X).*sin(pi*mode_num_y/(yU-yL)*Y).*cos(omegaMN*data(end-(Ny-1):end,1));
+    ErrF  = data(end-(Ny-1):end,2:end)-F0*sin(pi*mode_num_x/(xR-xL)*mesh(1,:)).*sin(pi*mode_num_y/(yU-yL)*mesh(2,:)').*cos(omegaMN*data(end-(Ny-1):end,1));
     for i = 1:Nx-1
       for j = 1:Ny-1
         NperErr(k) = NperErr(k) + ErrF(i,j)^2 + ErrF(i+1,j)^2 + ErrF(i,j+1)^2 + ErrF(i+1,j+1)^2;
@@ -189,9 +184,9 @@ for k=1:nsimul
 end
 NperErr = sqrt(0.25*((xR-xL)/(Nx-1))*((yU-yL)/(Ny-1))*NperErr); 
 
-%
+BCFL = sqrt(u^2*dt.^2*(((Nx-1)/(xR-xL))^2 + ((Ny-1)/(yU-yL))^2));
 ViewFormat;
 figure('Name',"étude de convergence")
-    plot(1./(Nsteps.^2),NperErr, '+-','LineWidth',lw);
+    plot(BCFL,NperErr, '+-','LineWidth',lw);
     grid minor; set(gca,'fontsize',fs);
-    xlabel('$1/(N_{steps})^2$'); ylabel('$\varepsilon$ [a.u.]');     
+    xlabel('$\beta_{CFL}$'); ylabel('$\varepsilon$ [a.u.]');     

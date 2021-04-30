@@ -135,7 +135,7 @@ bc_lower  = 'dirichlet';  bc_upper  = 'dirichlet';
 
 impulsion = false;          % si vrais et harmonique une seule onde est emise
 type_init = 'homogene';     % type initialisation: harmonic, default: homogene
-F0 = -15;			        % amplitude de l'harmonique initiale
+F0 = 1;			        % amplitude de l'harmonique initiale
 A = 1.e0;			        % amplitude condition bord harmonique
 omega = 10.e0;			    % frequence condition bord harmonique
 write_mesh = true;		    % si vrai le maillage est ecrite dans output_mesh.out
