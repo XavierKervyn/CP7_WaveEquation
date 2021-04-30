@@ -102,9 +102,10 @@ Ly  = 2000.0;    % longueur characteristique de l'onde en y (m)
 % nombre de node du maillage en x,y (extreme inclus)
 Nx = 64; 			 Ny = 64;
 
-nsimul = 5;
-ComputeDt = false;                   %ajout PERSO - option pour le calcul du dt
-CFL = 1 + logspace(-3,-1,nsimul);         % valeur de la condition CFL
+% nsimul = 2;
+ComputeDt = false;      % ajout PERSO - option pour le calcul du dt
+CFL = [1 1.03];         % valeur de la condition CFL
+nsimul = length(CFL);
 hx  = (xR-xL)/(Nx-1); hy  = (yU-yL)/(Ny-1);
 dt  = sqrt(CFL.^2 / (u^2 * (1/(hx)^2 + 1/(hy)^2)));
 
@@ -143,24 +144,30 @@ for i=1:nsimul
     system('Exercice7_Kervyn_LeMeur configuration.in'); 
 end
 
-ViewFormat; facteurTemps = 8;
-tblowup = tfin*ones(1,nsimul); delta = 1;
+ViewFormat; 
 for k=1:nsimul
+    delta = dt(k)/2;
     data = load(filename2(k)+'_f.out');
     mesh = load(filename2(k)+'_mesh.out');
     figure('Name',"plotsimulation CFL="+num2str(CFL(k)))
     for i =1:length(data(:,1))/Ny
         F = data(Ny*(i-1)+1:Ny*i,2:Nx+1);
         surf(mesh(1,:),mesh(2,:),F);
-        if(max(abs(F),[],'all')> (F0 + delta))
-           tblowup(k) = data(Ny*i,1); 
-        end
         title("$t =$"+num2str(data(Ny*i,1))+"s, $\beta_{CFL} =$"+num2str(CFL(k)),'Interpreter','latex');
         grid minor; set(gca,'fontsize',fs);
         xlabel('$x$ [m]'); ylabel('$y$ [m]'); zlabel('$f$ [a.u.]')
-        zlim([-3 3]);
+        zlim([-1.8 1.8]);
     %     view(0,0);
-        pause((1/facteurTemps)*dt);
-    %     pause();
+        if((data(Ny*i,1) > 1.49-delta) && (data(Ny*i,1) < 1.49+delta))
+            SaveIMG("DsurfaceCFL"+num2str(k)+"_1");
+        end
+        if((data(Ny*i,1) > 1.68-delta) && (data(Ny*i,1) < 1.68+delta))
+            SaveIMG("DsurfaceCFL"+num2str(k)+"_2");
+        end
+        if((data(Ny*i,1) > 1.85-delta) && (data(Ny*i,1) < 1.85+delta))
+            SaveIMG("DsurfaceCFL"+num2str(k)+"_3");
+        end
+        pause(1.e-9);
+%         pause();
     end
 end

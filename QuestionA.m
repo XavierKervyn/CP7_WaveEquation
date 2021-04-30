@@ -1,12 +1,11 @@
 %% Question 7.2.a - première partie (bord droit libre)
 clear all; close all; clc;
-Nsteps = 1000;
 
 % Parametres physiques:
-tfin = 20.0;		         % temps physique de la simulation (s)
+tfin = 8.0;		         % temps physique de la simulation (s)
 xL   = 0.0 ; 		     xR   = 10.0 ; 		     
 yL   = 0.0 ;		     yU   = 6.0 ;		     
-pert_amplitude = 3.e0;	 pert_velocity  = 0.e0;	 
+pert_amplitude = 0.e0;	 pert_velocity  = 0.e0;	 
 
 % Parametres physiques milieu uniforme:
 u = 4.e0; % vitesse de propagation (m/s)
@@ -24,8 +23,8 @@ Nx = 64; 			 % nombre de node du maillage en x (extreme inclus)
 Ny = 64; 			 % nombre de node du maillage en y (extreme inclus)
 
 ComputeDt = false;   %ajout PERSO - option pour le calcul du dt
-dt  = tfin/Nsteps;  %ajout PERSO - si le dt n'est pas calculé, cette valeur est prise
-CFL = 1.0;          % valeur de la condition CFL
+dt  = 0.02;           %ajout PERSO - si le dt n'est pas calculé, cette valeur est prise
+CFL = 1.0;           % valeur de la condition CFL
 
 type_u2 = 'const';		 % type de simulation: "const", "onde_cas1" et "onde_cas2"
 ecrire_f = true;		 % if true f est ecrite
@@ -56,11 +55,13 @@ omegaMN = 2*pi/T;
     system('Exercice7_Kervyn_LeMeur configuration.in'); 
 
 % Plot simulation
-ViewFormat; facteurTemps = 12;
+ViewFormat;
 data = load([filename2,'_f.out']);
 mesh = load([filename2,'_mesh.out']);
 
-figure('Name','plotsimulation')
+%
+delta = dt/2;
+figure('Name','plotsimulationAA')
 for i =1:length(data(:,1))/Ny
     surf(mesh(1,:),mesh(2,:),data(Ny*(i-1)+1:Ny*i,2:Nx+1));
     title("$t =$"+num2str(data(Ny*i,1))+"s",'Interpreter','latex');
@@ -68,8 +69,19 @@ for i =1:length(data(:,1))/Ny
     xlabel('$x$ [m]'); ylabel('$y$ [m]'); zlabel('$f$ [a.u.]')
     zlim([-5 5]);
 %     view(0,0);
-    pause((1/facteurTemps)*dt);
-%     pause();
+    if((data(Ny*i,1) > 2-delta) && (data(Ny*i,1) < 2+delta))
+        SaveIMG("AAsurface1");
+    end
+    if((data(Ny*i,1) > 2.7-delta) && (data(Ny*i,1) < 2.7+delta))
+        SaveIMG("AAsurface2");
+    end
+    if((data(Ny*i,1) > 4-delta) && (data(Ny*i,1) < 4+delta))
+        SaveIMG("AAsurface3");
+    end
+    if((data(Ny*i,1) > 5-delta) && (data(Ny*i,1) < 5+delta))
+        SaveIMG("AAsurface4");
+    end
+    pause(1.e-9);
 end
 
 % [X, Y]  = meshgrid(mesh(1,:),mesh(2,:));
@@ -78,20 +90,20 @@ end
 %     s1 = pcolor(X,Y,data(Ny*(i-1)+1:Ny*i,2:Nx+1));
 %     s1.FaceColor = 'interp';
 %     xlabel('$x$ [m]'); ylabel('$y$ [m]'); 
+%     title("$t =$"+num2str(data(Ny*i,1))+"s",'Interpreter','latex');
 %     set(gca,'fontsize',fs)
 %     h = colorbar(axes1);
 % %     xlabel(h,'$f$ [a.u.]','FontSize',fs,'Rotation',0,'Interpreter','Latex');
 % %     h.Label.Position(1) = 2.7;
 % %     h.Label.Position(2) = h.Label.Position(2)-0.5;
-%     pause((1/facteurTemps)*dt);
+%     pause(1.e-9);
 % end
 
 %% Matlab - question a (bord droit fixe)
 clear all; close all; clc;
-Nsteps = 1000;
 
 % Parametres physiques:
-tfin = 20.0;		     % temps physique de la simulation (s)
+tfin = 8.0;		     % temps physique de la simulation (s)
 xL   = 0.0 ; 		     % limite gauche du fond marin (m) const: 0.
 xR   = 10.0 ; 		     % limite droite du fond marin (m) const: 15.
 yL   = 0.0 ;		     % limite inferieur du fond marin (m) const: 0.
@@ -115,8 +127,8 @@ Nx = 64; 			 % nombre de node du maillage en x (extreme inclus)
 Ny = 64; 			 % nombre de node du maillage en y (extreme inclus)
 
 ComputeDt = false;   %ajout PERSO - option pour le calcul du dt
-dt  = tfin/Nsteps;  %ajout PERSO - si le dt n'est pas calculé, cette valeur est prise
-CFL = 1.0;          % valeur de la condition CFL
+dt  = 0.02;           %ajout PERSO - si le dt n'est pas calculé, cette valeur est prise
+CFL = 1.0;           % valeur de la condition CFL
 
 type_u2 = 'const';		 % type de simulation: "const", "onde_cas1" et "onde_cas2"
 ecrire_f = true;		 % if true f est ecrite
@@ -138,10 +150,6 @@ n_stride = 0;			     % nombre de stride
 %période d'oscillation th.
 T = 2/(u*sqrt((mode_num_x/(xR-xL))^2 + (mode_num_y/(yU-yL))^2));
 nbperiodes = 5;
-if(ComputeDt)
-    tfin = nbperiodes*T;
-    dt = tfin/Nsteps;
-end
 omegaMN = 2*pi/T;
 
 % Simulations
@@ -152,10 +160,9 @@ omegaMN = 2*pi/T;
     system('Exercice7_Kervyn_LeMeur configuration.in'); 
 
 % Plot simulation
-ViewFormat; facteurTemps = 8;
+ViewFormat; delta = dt/2;
 data = load([filename2,'_f.out']);
 mesh = load([filename2,'_mesh.out']);
-
 figure('Name','plotsimulation')
 for i =1:length(data(:,1))/Ny
     surf(mesh(1,:),mesh(2,:),data(Ny*(i-1)+1:Ny*i,2:Nx+1));
@@ -164,6 +171,24 @@ for i =1:length(data(:,1))/Ny
     xlabel('$x$ [m]'); ylabel('$y$ [m]'); zlabel('$f$ [a.u.]')
     zlim([-5 5]);
 %     view(0,0);
-    pause((1/facteurTemps)*dt);
+    if((data(Ny*i,1) > 2.08-delta) && (data(Ny*i,1) < 2.08+delta))
+        SaveIMG("ABsurface1");
+    end
+    if((data(Ny*i,1) > 3.14-delta) && (data(Ny*i,1) < 3.14+delta))
+        SaveIMG("ABsurface2");
+    end
+    if((data(Ny*i,1) > 4.4-delta) && (data(Ny*i,1) < 4.4+delta))
+        SaveIMG("ABsurface3");
+    end
+    if((data(Ny*i,1) > 2.08-delta) && (data(Ny*i,1) < 2.08+delta))
+        SaveIMG("ABsurface4");
+    end
+    if((data(Ny*i,1) > 5.9-delta) && (data(Ny*i,1) < 5.9+delta))
+        SaveIMG("ABsurface5");
+    end
+    if((data(Ny*i,1) > 6.9-delta) && (data(Ny*i,1) < 6.9+delta))
+        SaveIMG("ABsurface6");
+    end
+    pause(1.e-7);
 %     pause();
 end

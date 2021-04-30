@@ -94,6 +94,7 @@ end
     xline(omegaMN,'--',{"$\omega_{mn} =$"+num2str(omegaMN)+" rad/s"},'Interpreter','Latex','LabelOrientation','horizontal','Fontsize',fs,'LineWidth',lw,'LabelHorizontalAlignment','center','LabelVerticalAlignment','top');
     grid minor; set(gca,'fontsize',fs);
     xlabel('$\omega_{m,n}$ [rad/s]'); ylabel('$\hat{E}(\omega_{m,n})$ [J]');
+SaveIMG("EomegaMN");
     
 %% Comparaison avec un mode propre
 clear; clc;
@@ -166,9 +167,12 @@ for k=1:nsimul
     figure('Name','numérique')
         surf(X,Y,data(end-(Ny-1):end,2:end));
         grid minor; set(gca,'fontsize',fs);
-        xlabel('$x$ [m]'); ylabel('$y$ [m]'); zlabel('$f$ [a.u.]')
+        xlabel('$x$ [m]'); ylabel('$y$ [m]'); zlabel('$f$ [a.u.]');
+        SaveIMG("Enumerique");
     figure('Name','mode propre')
         surf(X,Y,F0*sin(pi*mode_num_x/(xR-xL)*X).*sin(pi*mode_num_y/(yU-yL)*Y));
+        colormap 'autumn'
         grid minor; set(gca,'fontsize',fs);
-        xlabel('$x$ [m]'); ylabel('$y$ [m]'); zlabel('$f$ [a.u.]')
+        xlabel('$x$ [m]'); ylabel('$y$ [m]'); zlabel('$f$ [a.u.]');
+        SaveIMG("EmodepropreAna");
 end
