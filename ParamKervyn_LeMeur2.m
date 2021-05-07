@@ -4,7 +4,7 @@
 clear all; close all; clc;
 
 % Parametres physiques:
-tfin = 150.0;    % temps physique de la simulation (s)
+tfin = 100.0;    % temps physique de la simulation (s)
 xL   = 0.0 ; 		     xR   = 5.e3 ; 		     
 yL   = 0.0 ;		     yU   = 2.e3;		%dimensions (m)     
 pert_amplitude = 0.e0;	 pert_velocity  = 0.e0;	
@@ -22,11 +22,11 @@ Ly  = 2000.0; % longueur characteristique de l'onde en y (m)
 
 % Parametres numeriques :
 % nombre de node du maillage en x,y (extreme inclus)
-Nx = 80; 			 Ny = 80;
+Nx = 200; 			 Ny = 200;
 
 ComputeDt = true;  %ajout PERSO - option pour le calcul du dt
-dt  = 0.1;        %ajout PERSO - si le dt n'est pas calculé, cette valeur est prise
-CFL = 0.95;         % valeur de la condition CFL
+dt  = 0.1;         %ajout PERSO - si le dt n'est pas calculé, cette valeur est prise
+CFL = 0.95;        %valeur de la condition CFL
 
 type_u2  = 'onde_cas1';	 % type de simulation: "const", "onde_cas1" et "onde_cas2"
 ecrire_f = true;         % if true f est ecrite
@@ -34,7 +34,7 @@ ecrire_f = true;         % if true f est ecrite
 % valeur propre en x,y
 mode_num_x = 0;			 mode_num_y = 0;			 
 
-%conditions aux bords: dirichlet, neumann, harmonic
+% conditions aux bords: dirichlet, neumann, harmonic
 bc_left   = 'harmonic'; bc_right  = 'neumann';   
 bc_lower  = 'neumann';  bc_upper  = 'neumann';   
 
@@ -56,40 +56,39 @@ filename2  = "Nx_"+ num2str(Nx) + "Ny_" + num2str(Ny);
     disp('Exercice7_Kervyn_LeMeur configuration.in');   
     system('Exercice7_Kervyn_LeMeur configuration.in'); 
 
-% Plot simulation
 ViewFormat;
+mesh = dlmread(filename2+'_mesh.out');
 data = load(filename2+'_f.out');
-mesh = load(filename2+'_mesh.out');
-[X,Y]= meshgrid(mesh(1,:),mesh(2,:));
+[X,Y]= meshgrid(mesh(1,1:Nx),mesh(2,1:Ny));
 
-% profil de la profondeur
+% Calcul du profil de la profondeur
 hK1 = h0*ones(length(X),length(Y));
 for j = 1:length(Y)
     for i=1:length(X)
-        x = mesh(1,i); %disp(x);
+        x = mesh(1,i);
         if(x>a && x<b) 
             hK1(j,i) = h0+(h1-h0)*sin(pi*(x-a)/(b-a));
         end
     end
 end
 
-%
+%% Plot du profil de la profondeur
 % figure('Name','plotProfondeur Cas 1')
 % for i =1:length(data(:,1))/Ny
 %     surf(X,Y,-hK1);
 %     grid minor; set(gca,'fontsize',fs);
-%     xlabel('$x$ [m]'); ylabel('$y$ [m]'); zlabel('$f$ [a.u.]')
+%     xlabel('$x$ [m]'); ylabel('$y$ [m]'); zlabel('$f$ [m]')
 % %     zlim([-5 5]);
 % %     view(0,0);
 % end
 
-%%
-Hmax = 0;
+%% Plot de la simulation au cours du temps
+Hmax = 0; delta = 0.140245/2; 
 figure('Name','plotsimulation')
 for i =1:length(data(:,1))/Ny
-    surf(X,Y,-hK1);
+    surf(X,Y,-hK1,'EdgeColor','None');
     hold on
-    surf(mesh(1,:),mesh(2,:),data(Ny*(i-1)+1:Ny*i,2:Nx+1));
+    surf(mesh(1,:),mesh(2,:),data(Ny*(i-1)+1:Ny*i,2:Nx+1),'EdgeColor','None');
     hold off
     title("$t =$"+num2str(data(Ny*i,1))+"s",'Interpreter','latex');
     grid minor; set(gca,'fontsize',fs);
@@ -98,19 +97,24 @@ for i =1:length(data(:,1))/Ny
        Hmax = Max_temp; 
     end
     xlabel('$x$ [m]'); ylabel('$y$ [m]'); zlabel('$f$ [m]')
-    zlim([-5, 5]);   
-    view(0,0);
+    zlim([-1010, 200]);  
+%     if((data(Ny*i,1) > 25-delta) && (data(Ny*i,1) < 25+delta))
+% %         SaveIMG("7_3_plotSimulation1");
+%     end
+%     if((data(Ny*i,1) > 40-delta) && (data(Ny*i,1) < 40+delta))
+% %         SaveIMG("7_3_plotSimulation2");
+%     end
     pause(1.e-9);
-    %pause();
 end
+disp("Hmax = " + num2str(Hmax));
 
-%% PARTIE 7.3 - CAS 2
+%% Nouveau maillage en Nx, Amplitude sur une coupe
 % Vague avec profondeur de l'océan variable.
 % question a.
-clear all; close all; clc;
+clear all; clc;
 
 % Parametres physiques:
-tfin = 200.0;    % temps physique de la simulation (s)
+tfin = 100.0;    % temps physique de la simulation (s)
 xL   = 0.0 ; 		     xR   = 5.e3 ; 		     
 yL   = 0.0 ;		     yU   = 2.e3;		%dimensions (m)     
 pert_amplitude = 0.e0;	 pert_velocity  = 0.e0;	
@@ -128,25 +132,25 @@ Ly  = 2000.0; % longueur characteristique de l'onde en y (m)
 
 % Parametres numeriques :
 % nombre de node du maillage en x,y (extreme inclus)
-Nx = 80; 			 Ny = 80;
+Nx = [100 200 600]; 			 Ny = 4;
 
 ComputeDt = true;  %ajout PERSO - option pour le calcul du dt
-dt  = 0.1;        %ajout PERSO - si le dt n'est pas calculé, cette valeur est prise
-CFL = 0.95;         % valeur de la condition CFL
+dt  = 0.1;         %ajout PERSO - si le dt n'est pas calculé, cette valeur est prise
+CFL = 0.95;        %valeur de la condition CFL
 
-type_u2  = 'onde_cas2';	 % type de simulation: "const", "onde_cas1" et "onde_cas2"
+type_u2  = 'onde_cas1';	 % type de simulation: "const", "onde_cas1" et "onde_cas2"
 ecrire_f = true;         % if true f est ecrite
 
 % valeur propre en x,y
 mode_num_x = 0;			 mode_num_y = 0;			 
 
-%conditions aux bords: dirichlet, neumann, harmonic
+% conditions aux bords: dirichlet, neumann, harmonic
 bc_left   = 'harmonic'; bc_right  = 'neumann';   
 bc_lower  = 'neumann';  bc_upper  = 'neumann';   
 
 T = 15; %2/(u*sqrt((mode_num_x/(xR-xL))^2 + (mode_num_y/(yU-yL))^2));
 
-impulsion = true;          % si vrais et harmonique une seule onde est emise
+impulsion = true;           % si vrais et harmonique une seule onde est emise
 type_init = 'homogene';     % type initialisation: harmonic, default: homogene
 F0 = 0.e0;			        % amplitude de l'harmonique initiale
 A = 1.e0;			        % amplitude condition bord harmonique
@@ -156,57 +160,95 @@ write_f = true;		 	    % si vrais la solution est ecrite dans output_f.out
 n_stride = 0;			    % nombre de stride
 
 % Simulations
-filename2  = "Nx_"+ num2str(Nx) + "Ny_" + num2str(Ny);
-    Nx_loc = Nx; Ny_loc = Ny; 
+for n=1:length(Nx)
+    filename2  = "Nx_"+ num2str(Nx(n)) + "Ny_" + num2str(Ny);
+    Nx_loc = Nx(n); Ny_loc = Ny; 
     writeConfig;
-    disp('Exercice7_Kervyn_LeMeur configuration.in');   
-    system('Exercice7_Kervyn_LeMeur configuration.in'); 
+    disp('Ex7 configuration.in');   
+    system('Ex7 configuration.in'); 
 
-% Plot simulation
-ViewFormat;
-data = load(filename2+'_f.out');
-mesh = load(filename2+'_mesh.out');
-[X,Y]= meshgrid(mesh(1,:),mesh(2,:));
+    ViewFormat;
+    mesh = dlmread(filename2+'_mesh.out');
+    data = load(filename2+'_f.out');
 
-% profil de la profondeur
-hK2 = h0*ones(length(X),length(Y));
-for j = 1:length(Y)
-    for i=1:length(X)
-        x = mesh(1,i); %disp(x);
-        y = mesh(2,j);
-        if(x>a && x<b) 
-            hK2(j,i) = h0+(h1-h0)*sin(pi*(x-a)/(b-a))*sin(pi*y/(yU-yL));
-        end
+    % on récupère toutes les tranches à chaque temps pour y fixé (starty)
+    starty   = 2; newdata  = data(starty:Ny:end,:);  
+    % on trouve le maximum d'amplitude et l'indice en x associé
+    AmpliMax = zeros(length(newdata(:,1)),1); IndiceX = zeros(length(newdata(:,1)),1);
+    for i=1:length(AmpliMax) 
+       [AmpliMax(i) , IndiceX(i)] = max(newdata(i,2:end)); 
+    end
+    % on fait correspondre l'indice à une valeur de x
+    Xreel = zeros(length(IndiceX),1); 
+    for i=1:length(IndiceX) 
+        Xreel(i,1) = mesh(1,IndiceX(i)); 
+    end
+    if(n==1)
+       A1 = [Xreel, AmpliMax];
+    end
+    if(n==2)
+       A2 = [Xreel, AmpliMax];
+    end
+    if(n==3)
+       A3 = [Xreel, AmpliMax];
     end
 end
+posy = mesh(2,starty);
 
-%
-figure('Name','plotProfondeur Cas 2')
-for i =1:length(data(:,1))/Ny
-    surf(X,Y,-hK2);
-    grid minor; set(gca,'fontsize',fs);
-    xlabel('$x$ [m]'); ylabel('$y$ [m]'); zlabel('$f$ [a.u.]')
-%     zlim([-5 5]);
-%     view(0,0);
-end
+U = load(filename2+'_u.out');
+newU = U(starty,:);
 
-%
-Hmax = 0;
-figure('Name','plotsimulation cas 2')
+A0 = (g*h0)^(1/4);
+
+debut = 60; fin = 1234;
+figure('Name',"plot Amplitude")
+        plot(A1(:,1),A1(:,2),' .','Linewidth',lw);
+        hold on
+        plot(A2(6:end,1),A2(6:end,2),' .','Linewidth',lw);
+        plot(A3(debut:fin,1),A3(debut:fin,2),' .','Linewidth',lw);
+        plot(mesh(1,1:Nx(end)),A0./sqrt(newU),'--','Linewidth',lw+1);
+        grid minor; set(gca,'fontsize',fs);
+        legendStrings = "$n_x = $" + string(Nx');
+        legend("$n_x = $" + num2str(Nx(1)),"$n_x = $" + num2str(Nx(2)),"$n_x = $" + num2str(Nx(3)),"$A_0 / \sqrt{u}$",'Location','northwest','NumColumns',1)
+        xlabel('$x$ [m]'); ylabel('Relative amplitude [m]');
+        ylim([0.8 2.7]); xlim([10,5000]);
+SaveIMG("AmplitudeRelative");
+
+%% Plot de la simulation au cours du temps (pour le dernier Nx)
+Hmax = 0; delta = 0.140245/2; 
+
 for i =1:length(data(:,1))/Ny
-%     surf(X,Y,-hK2);
-%     hold on
-    surf(mesh(1,:),mesh(2,:),data(Ny*(i-1)+1:Ny*i,2:Nx+1));
-%     hold off
-    title("$t =$"+num2str(data(Ny*i,1))+"s",'Interpreter','latex');
-    grid minor; set(gca,'fontsize',fs);
-    Max_temp = max(data(Ny*(i-1)+1:Ny*i,2:Nx+1),[],'all'); %returns the largest element of X.
+    Max_temp = max(data(Ny*(i-1)+1:Ny*i,2:Nx(n)+1),[],'all'); %returns the largest element of X.
     if(Max_temp > Hmax)
        Hmax = Max_temp; 
     end
-    xlabel('$x$ [m]'); ylabel('$y$ [m]'); zlabel('$f$ [m]')
-    zlim([-10, 10]);   
-%     view(0,0);
     pause(1.e-9);
-    %pause();
 end
+disp("Hmax = " + num2str(Hmax));
+
+%% évolution temporelle en coupe selon x
+start = 2;
+newdata = data(start:Ny:end,:);
+posy = mesh(2,start);
+
+% en Surf
+figure('Name',"plot cas 1 en coupe")
+        surf(mesh(1,:),newdata(:,1),newdata(:,2:end),'EdgeColor','None');
+        grid minor; set(gca,'fontsize',fs);
+        xlabel('$x$ [m]'); ylabel('$t$ [s]'); zlabel("$f(x,y=y_{loc},t)$ [m]")
+SaveIMG("7_3_CoupeCas1");
+
+% en Pcolor
+axes1 = axes('Parent',figure);
+for i =1:length(data(:,1))/Ny
+    s1 = pcolor(mesh(1,:),newdata(:,1),newdata(:,2:end));
+    s1.FaceColor = 'interp';
+    s1.EdgeColor = 'None';
+    xlabel('$x$ [m]'); ylabel('$t$ [s]'); 
+    set(gca,'fontsize',fs)
+        h = colorbar(axes1);
+        h.Label.String = '$f(x,y=y_{loc},t)$ [m]';
+        h.Label.Interpreter = 'Latex';
+        h.Label.FontSize = fs;
+end
+SaveIMG("7_3_PcolorCas1");

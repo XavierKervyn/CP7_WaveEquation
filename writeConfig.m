@@ -24,8 +24,8 @@ fprintf(fid,['b=', num2str(b),'\n']);
 fprintf(fid,['Ly=', num2str(Ly),'\n']);
 
 %Paramètres numériques:
-fprintf(fid,['Nx=', num2str(Nx),'\n']);
-fprintf(fid,['Ny=', num2str(Ny),'\n']);
+fprintf(fid,['Nx=', num2str(Nx_loc),'\n']);
+fprintf(fid,['Ny=', num2str(Ny_loc),'\n']);
 
 fprintf(fid,['ComputeDt=', num2str(ComputeDt),'\n']);
 fprintf(fid,['dt=',  num2str(dt),'\n']);

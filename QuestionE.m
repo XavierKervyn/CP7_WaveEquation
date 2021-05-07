@@ -93,11 +93,11 @@ end
     hold on 
     xline(omegaMN,'--',{"$\omega_{mn} =$"+num2str(omegaMN)+" rad/s"},'Interpreter','Latex','LabelOrientation','horizontal','Fontsize',fs,'LineWidth',lw,'LabelHorizontalAlignment','center','LabelVerticalAlignment','top');
     grid minor; set(gca,'fontsize',fs);
-    xlabel('$\omega_{m,n}$ [rad/s]'); ylabel('$\hat{E}(\omega_{m,n})$ [J]');
+    xlabel('$\omega$ [rad/s]'); ylabel('$\hat{E}(\omega_{m,n})$ [J]');
 SaveIMG("EomegaMN");
     
 %% Comparaison avec un mode propre
-clear; clc;
+clear all; close all; clc;
 
 % Parametres physiques:
 xL   = 0.0 ; 		     xR   = 10.0 ; 		     
@@ -159,18 +159,37 @@ for i=1:nsimul
 end
 
 % plot
-ViewFormat;
+ViewFormat; levels = 15;
 for k=1:nsimul
     data   = load(filename2(k)+'_f.out');
     mesh   = load(filename2(k)+'_mesh.out');
     [X, Y] = meshgrid(mesh(1,:),mesh(2,:));
-    figure('Name','numérique')
-        surf(X,Y,data(end-(Ny-1):end,2:end));
+
+%   numérique
+    axes1 = axes('Parent',figure);
+    for i =1:length(data(:,1))/Ny
+        s1 = contourf(X,Y,data(end-(Ny-1):end,2:end),levels);
+%         s1.FaceColor = 'interp';
+        xlabel('$x$ [m]'); ylabel('$y$ [m]'); 
+        h = colorbar(axes1);
+        h.Label.String = '$f$ [a.u.]';
+        h.Label.Interpreter = 'Latex';
+        h.Label.FontSize = fs;
         grid minor; set(gca,'fontsize',fs);
-        xlabel('$x$ [m]'); ylabel('$y$ [m]'); zlabel('$f$ [a.u.]');
+    end
         SaveIMG("Enumerique");
-    figure('Name','mode propre')
-        surf(X,Y,F0*sin(pi*mode_num_x/(xR-xL)*X).*sin(pi*mode_num_y/(yU-yL)*Y));
+        
+%     mode propre
+    axes2 = axes('Parent',figure);
+    for i =1:length(data(:,1))/Ny
+        s1 = contourf(X,Y,F0*sin(pi*mode_num_x/(xR-xL)*X).*sin(pi*mode_num_y/(yU-yL)*Y),levels);
+%         s1.FaceColor = 'interp';
+        h = colorbar(axes2);
+        h.Label.String = '$f$ [a.u.]';
+        h.Label.Interpreter = 'Latex';
+        h.Label.FontSize = fs;
+        grid minor; set(gca,'fontsize',fs);
+    end
         colormap 'autumn'
         grid minor; set(gca,'fontsize',fs);
         xlabel('$x$ [m]'); ylabel('$y$ [m]'); zlabel('$f$ [a.u.]');

@@ -4,8 +4,8 @@ QuestionA;
 %% Matlab - question c + étude de convergence
 QuestionC;
 
-%% Matlab - question d
+%% Matlab - question d - limite de stabilité
 QuestionD;
 
-%% Matlab - question e
+%% Matlab - question e - 
 QuestionE;

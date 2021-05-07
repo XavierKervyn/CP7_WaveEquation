@@ -458,10 +458,10 @@ int main(int argc, char* argv[])
   unsigned int n_stride(configFile.get<unsigned int>("n_stride"));
   // put has first line the position vector
   vector<double> x_mesh(Nx_real),y_mesh(Ny_real);
-  for(i=0; i<end_xiD+1; ++i){
+  for(i=0; i<Nx_real; ++i){
     x_mesh[i] = u2->get_left_extremum()+(i)*dx;
   }
-  for(i=0; i<end_yiD+1; ++i){
+  for(i=0; i<Ny_real; ++i){
     y_mesh[i] = u2->get_lower_extremum()+(i)*dy;
   }
   /*for(i=start_xiD; i<end_xiD+1; ++i){
@@ -489,13 +489,7 @@ int main(int argc, char* argv[])
     // TODO: calculer fnext selon le schema explicite a 3 niveaux
     for(i=1; i<Ny-1; ++i){
       for(j=1; j<Nx-1; ++j){
-        fnext[i][j] = /*pow(dt,2) * ( pow((*u2)(x_mesh[i],y_mesh[j]),2) * (  1/pow(dx,2)*(fnow[i+1][j] - 2*fnow[i][j] + fnow[i-1][j])
-                                                                      + 1/pow(dy,2)*(fnow[i][j+1] - 2*fnow[i][j] + fnow[i][j-1]) )
-                                  + 1/pow(2*dx,2)*((*u2)(x_mesh[i+1],y_mesh[j]) - (*u2)(x_mesh[i-1],y_mesh[j]))*(fnow[i+1][j] - fnow[i-1][j])
-                                  + 1/pow(2*dy,2)*((*u2)(x_mesh[i],y_mesh[j+1]) - (*u2)(x_mesh[i],y_mesh[j-1]))*(fnow[i][j+1] - fnow[i][j-1])
-                                  + perturbation(t,x_mesh[i],y_mesh[j],u2->get_left_extremum(),u2->get_right_extremum(),u2->get_lower_extremum(),u2->get_upper_extremum(),A,omega,k_wave_x,k_wave_y)  )
-                      + 2*fnow[i][j] - fpast[i][j];*/
-                          betay2[i][j]*(fnow[i+1][j] - 2*fnow[i][j] + fnow[i-1][j])
+        fnext[i][j] =     betay2[i][j]*(fnow[i+1][j] - 2*fnow[i][j] + fnow[i-1][j])
                         + betax2[i][j]*(fnow[i][j+1] - 2*fnow[i][j] + fnow[i][j-1])
                         + 0.25*(betay2[i+1][j]-betay2[i-1][j])*(fnow[i+1][j] - fnow[i-1][j])
                         + 0.25*(betax2[i][j+1]-betax2[i][j-1])*(fnow[i][j+1] - fnow[i][j-1])

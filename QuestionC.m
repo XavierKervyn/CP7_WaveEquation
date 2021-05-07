@@ -61,50 +61,58 @@ disp('Exercice7_Kervyn_LeMeur configuration.in');
 system('Exercice7_Kervyn_LeMeur configuration.in'); 
 
 % Plot simulation
-ViewFormat;
+ViewFormat; levels = 15;
 data = load([filename2,'_f.out']);
 mesh = load([filename2,'_mesh.out']);
 
-figure('Name','plotsimulation')
+% figure('Name','plotsimulation')
+[X, Y]  = meshgrid(mesh(1,:),mesh(2,:));
+axes1 = axes('Parent',figure);
 for i =1:length(data(:,1))/Ny
-    s = surfc(mesh(1,:),mesh(2,:),data(Ny*(i-1)+1:Ny*i,2:Nx+1));
-    title("$t =$"+num2str(data(Ny*i,1))+"s",'Interpreter','latex');
-    grid minor; set(gca,'fontsize',fs);
-    xlabel('$x$ [m]'); ylabel('$y$ [m]'); zlabel('$f$ [a.u.]');
-    colormap 'winter'
-    zlim([-2 2]);
-%     view(0,0);
-    pause(1.e-5);
-%     pause();
+    s1 = contourf(X,Y,data(Ny*(i-1)+1:Ny*i,2:Nx+1),levels);
+    xlabel('$x$ [m]'); ylabel('$y$ [m]'); 
+    title("$t =$ "+num2str(data(Ny*i,1))+"s",'Interpreter','latex');
+    set(gca,'fontsize',fs)
+    caxis([-(A+0.2) A+0.2]);
+        h = colorbar(axes1);
+        h.Label.String = '$f$ [a.u.]';
+        h.Label.Interpreter = 'Latex';
+        h.Label.FontSize = fs;
 end
     SaveIMG("CSimulation");
 
-figure('Name','plotAnalytique')
+% figure('Name','plotAnalytique')
+[X, Y]  = meshgrid(mesh(1,:),mesh(2,:),15);
+axes1 = axes('Parent',figure);
 for i =1:length(data(:,1))/Ny
-    surfc(mesh(1,:),mesh(2,:),F0*sin(pi*mode_num_x/(xR-xL)*mesh(1,:)).*sin(pi*mode_num_y/(yU-yL)*mesh(2,:)')*cos(omegaMN*data(Ny*i,1)));
-    title("$t =$"+num2str(data(Ny*i,1))+"s",'Interpreter','latex');
-    grid minor; set(gca,'fontsize',fs);
-    xlabel('$x$ [m]'); ylabel('$y$ [m]'); zlabel('$f$ [a.u.]')
-    zlim([-2 2]);
-%     view(0,0);
-    pause(1.e-5);
-%     pause();
+    s1 = contourf(X,Y,F0*sin(pi*mode_num_x/(xR-xL)*mesh(1,:)).*sin(pi*mode_num_y/(yU-yL)*mesh(2,:)')*cos(omegaMN*data(Ny*i,1)),levels);
+    xlabel('$x$ [m]'); ylabel('$y$ [m]'); 
+    title("$t =$ "+num2str(data(Ny*i,1))+"s",'Interpreter','latex');
+    set(gca,'fontsize',fs)
+    caxis([-(A+0.2) A+0.2]);
+        h = colorbar(axes1);
+        h.Label.String = '$f$ [a.u.]';
+        h.Label.Interpreter = 'Latex';
+        h.Label.FontSize = fs;
 end
     SaveIMG("CAnalytique");
 
 %% soustraction des solutions
-ViewFormat;
+ViewFormat; levels = 15;
 data = load([filename2,'_f.out']);
 mesh = load([filename2,'_mesh.out']);
-figure('Name','Soustraction')
+[X, Y]  = meshgrid(mesh(1,:),mesh(2,:));
+axes1 = axes('Parent',figure);
 for i =1:length(data(:,1))/Ny
-    surf(mesh(1,:),mesh(2,:),data(Ny*(i-1)+1:Ny*i,2:Nx+1)-F0*sin(pi*mode_num_x/(xR-xL)*mesh(1,:)).*sin(pi*mode_num_y/(yU-yL)*mesh(2,:)')*cos(omegaMN*data(Ny*i,1)));
-    title("t ="+num2str(data(Ny*i,1))+"s",'Interpreter','latex');
-    grid minor; set(gca,'fontsize',fs);
-    xlabel('$x$ [m]'); ylabel('$y$ [m]'); zlabel('$f$ [a.u.]')
+    s1 = contourf(X,Y,data(Ny*(i-1)+1:Ny*i,2:Nx+1)-F0*sin(pi*mode_num_x/(xR-xL)*mesh(1,:)).*sin(pi*mode_num_y/(yU-yL)*mesh(2,:)')*cos(omegaMN*data(Ny*i,1)),levels);
+    xlabel('$x$ [m]'); ylabel('$y$ [m]'); 
+    title("$t =$ "+num2str(data(Ny*i,1))+"s",'Interpreter','latex');
+    set(gca,'fontsize',fs)
+        h = colorbar(axes1);
+        h.Label.String = '$f_{num} - f_{ana}$ [a.u.]';
+        h.Label.Interpreter = 'Latex';
+        h.Label.FontSize = fs;
     colormap 'autumn'
-%     zlim([-0.1 0.1]);
-%     view(0,0);
     pause(1.e-9);
 end
    SaveIMG("CdifferenceNumAna");
@@ -193,6 +201,14 @@ for n=1:length(N)
     BCFLs(n,:) = sqrt(u^2*dt.^2*(((Nx-1)/(xR-xL))^2 + ((Ny-1)/(yU-yL))^2));
 end 
 
+for i=1:length(BCFLs(3,:))
+    if(BCFLs(2,i) > 1)
+       Errors(2,i) = 0; 
+    end
+    if(BCFLs(3,i) > 1)
+       Errors(3,i) = 0; 
+    end
+end
 %%
 ViewFormat;
 figure('Name',"étude de convergence")
@@ -201,8 +217,37 @@ for n=1:length(N)
     hold on
 end
     leg = legend(string(N),'Location','northwest');
-    title(leg,"$N_{x,y}$")
+    title(leg,"$n_{x,y}$")
     xlim([0,1]); ylim([0,0.015]);
     grid minor; set(gca,'fontsize',fs);
-    xlabel('$\beta_{CFL}$'); ylabel('$\varepsilon$ [a.u.]');
+    xlabel('$\beta_{CFL}$'); ylabel('$\varepsilon$ [(a.u.)$\cdot$ m]');
     SaveIMG("CconvergenceCFL2");
+%%
+   BetaZoom1 = BCFLs(1,8:17); ErrZoom1 = Errors(1,8:17);
+   BetaZoom2 = BCFLs(2,13:26); ErrZoom2 = Errors(2,13:26);
+   BetaZoom3 = BCFLs(3,18:end); ErrZoom3 = Errors(3,18:end);
+   
+figure('Name',"convergence")
+    plot(BetaZoom1,ErrZoom1, '+','LineWidth',lw);
+    hold on
+    plot(BetaZoom2,ErrZoom2, '+','LineWidth',lw);
+    plot(BetaZoom3,ErrZoom3, '+','LineWidth',lw);
+    
+    P1 = polyfit(BetaZoom1,ErrZoom1,1); 
+    z1  = polyval(P1, BetaZoom1);
+    plot(BetaZoom1,z1,'--','Linewidth',lw,'HandleVisibility','off');
+    
+    P2 = polyfit(BetaZoom2,ErrZoom2,1); 
+    z2  = polyval(P2, BetaZoom2);
+    plot(BetaZoom2,z2,'--','Linewidth',lw,'HandleVisibility','off');
+
+    P3 = polyfit(BetaZoom3,ErrZoom3,1); 
+    z3  = polyval(P3, BetaZoom3);
+    plot(BetaZoom3,z3,'--','Linewidth',lw,'HandleVisibility','off');
+    
+    leg = legend(string(N),'Location','northwest');
+    title(leg,"$n_{x,y}$")
+    grid minor; set(gca,'fontsize',fs);
+    xlabel('$\beta_{CFL}$'); ylabel('$\varepsilon$ [(a.u.)$\cdot$ m]');
+SaveIMG("CconvergenceCFL2_lines");
+   
