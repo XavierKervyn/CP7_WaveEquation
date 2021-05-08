@@ -4,7 +4,7 @@
 clear all; close all; clc;
 
 % Parametres physiques:
-tfin = 100.0;    % temps physique de la simulation (s)
+tfin = 101;    % temps physique de la simulation (s)
 xL   = 0.0 ; 		     xR   = 5.e3 ; 		     
 yL   = 0.0 ;		     yU   = 2.e3;		%dimensions (m)     
 pert_amplitude = 0.e0;	 pert_velocity  = 0.e0;	
@@ -22,7 +22,7 @@ Ly  = 2000.0; % longueur characteristique de l'onde en y (m)
 
 % Parametres numeriques :
 % nombre de node du maillage en x,y (extreme inclus)
-Nx = 200; 			 Ny = 200;
+Nx = 128; 			 Ny = 128;
 
 ComputeDt = true;  %ajout PERSO - option pour le calcul du dt
 dt  = 0.1;         %ajout PERSO - si le dt n'est pas calculé, cette valeur est prise
@@ -67,29 +67,30 @@ for j = 1:length(Y)
     for i=1:length(X)
         x = mesh(1,i);
         if(x>a && x<b) 
-            hK1(j,i) = h0+(h1-h0)*sin(pi*(x-a)/(b-a));
+            hK1(j,i) = (h0-h1)*x/(a-b)+(a*h1 - b*h0)/(a-b);%h0+(h1-h0)*sin(pi*(x-a)/(b-a));
         end
     end
 end
 
 %% Plot du profil de la profondeur
-% figure('Name','plotProfondeur Cas 1')
-% for i =1:length(data(:,1))/Ny
-%     surf(X,Y,-hK1);
-%     grid minor; set(gca,'fontsize',fs);
-%     xlabel('$x$ [m]'); ylabel('$y$ [m]'); zlabel('$f$ [m]')
-% %     zlim([-5 5]);
-% %     view(0,0);
-% end
+figure('Name','plotProfondeur Cas 1')
+for i =1:length(data(:,1))/Ny
+    surf(X,Y,-hK1);
+    grid minor; set(gca,'fontsize',fs);
+    xlabel('$x$ [m]'); ylabel('$y$ [m]'); zlabel('$f$ [m]')
+%     zlim([-5 5]);
+%     view(0,0);
+end
+SaveIMG("fondBonus");
 
 %% Plot de la simulation au cours du temps
 Hmax = 0; delta = 0.140245/2; 
 figure('Name','plotsimulation')
 for i =1:length(data(:,1))/Ny
-    surf(X,Y,-hK1,'EdgeColor','None');
-    hold on
-    surf(mesh(1,:),mesh(2,:),data(Ny*(i-1)+1:Ny*i,2:Nx+1),'EdgeColor','None');
-    hold off
+%     surf(X,Y,-hK1,'EdgeColor','None');
+%     hold on
+    surf(mesh(1,:),mesh(2,:),data(Ny*(i-1)+1:Ny*i,2:Nx+1),'FaceColor','Interp');
+%     hold off
     title("$t =$"+num2str(data(Ny*i,1))+"s",'Interpreter','latex');
     grid minor; set(gca,'fontsize',fs);
     Max_temp = max(data(Ny*(i-1)+1:Ny*i,2:Nx+1),[],'all'); %returns the largest element of X.
@@ -97,13 +98,14 @@ for i =1:length(data(:,1))/Ny
        Hmax = Max_temp; 
     end
     xlabel('$x$ [m]'); ylabel('$y$ [m]'); zlabel('$f$ [m]')
-    zlim([-1010, 200]);  
-%     if((data(Ny*i,1) > 25-delta) && (data(Ny*i,1) < 25+delta))
-% %         SaveIMG("7_3_plotSimulation1");
-%     end
-%     if((data(Ny*i,1) > 40-delta) && (data(Ny*i,1) < 40+delta))
-% %         SaveIMG("7_3_plotSimulation2");
-%     end
+    zlim([-2, 2]);  
+    view(0,0);
+    if((data(Ny*i,1) > 20-delta) && (data(Ny*i,1) < 20+delta))
+        SaveIMG("BONUS plot 1");
+    end
+    if((data(Ny*i,1) > 50-delta) && (data(Ny*i,1) < 50+delta))
+        SaveIMG("BONUS2 plot 2");
+    end
     pause(1.e-9);
 end
 disp("Hmax = " + num2str(Hmax));

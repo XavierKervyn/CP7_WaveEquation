@@ -491,8 +491,8 @@ int main(int argc, char* argv[])
       for(j=1; j<Nx-1; ++j){
         fnext[i][j] =     betay2[i][j]*(fnow[i+1][j] - 2*fnow[i][j] + fnow[i-1][j])
                         + betax2[i][j]*(fnow[i][j+1] - 2*fnow[i][j] + fnow[i][j-1])
-                        + 0.25*(betay2[i+1][j]-betay2[i-1][j])*(fnow[i+1][j] - fnow[i-1][j])
-                        + 0.25*(betax2[i][j+1]-betax2[i][j-1])*(fnow[i][j+1] - fnow[i][j-1])
+                        /*+ 0.25*(betay2[i+1][j]-betay2[i-1][j])*(fnow[i+1][j] - fnow[i-1][j])
+                        + 0.25*(betax2[i][j+1]-betax2[i][j-1])*(fnow[i][j+1] - fnow[i][j-1])*/
                         + pow(dt,2) * perturbation(t,x_mesh[j],y_mesh[i],u2->get_left_extremum(),u2->get_right_extremum(),u2->get_lower_extremum(),u2->get_upper_extremum(),pert_velocity,pert_amplitude,mode_num_x,mode_num_y)
                         + 2*fnow[i][j] - fpast[i][j];
       }
